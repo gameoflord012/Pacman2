@@ -15,3 +15,15 @@ public class InvalidMapFormat : Exception
     protected InvalidMapFormat(System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }
+
+public class InvalidPlayerDirection : Exception
+{
+    public InvalidPlayerDirection() : base() { }
+    public InvalidPlayerDirection(string message) : base(message) { }
+    public InvalidPlayerDirection(string message, Exception inner) : base(message, inner) { }
+
+    // A constructor is needed for serialization when an
+    // exception propagates from a remoting server to the client.
+    protected InvalidPlayerDirection(System.Runtime.Serialization.SerializationInfo info,
+        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+}

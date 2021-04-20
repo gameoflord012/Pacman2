@@ -7,6 +7,9 @@ using UnityEngine;
 public interface IMoveBehaviour
 {    
     event Action OnMovementFinshed;
-    void MoveX(Transform t, int d);
-    void MoveY(Transform t, int d);
+
+    bool MoveRight(Transform t);
+    bool MoveLeft(Transform t);
+    bool MoveUp(Transform t);
+    bool MoveDown(Transform t);
 }

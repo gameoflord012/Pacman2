@@ -49,14 +49,12 @@ public class Globals : MonoBehaviour
         Space = '0'
     }
 
-    public MapRaw CurrentMapRaw;
-    public Tilemap CurrentTilemap;
-    public Vector2Int CurrentRawPosition;
-    public GameObject Player;
+    [SerializeField] public MapRaw CurrentMapRaw;
+    [SerializeField] public Tilemap CurrentTilemap;
+    [SerializeField] public PlayerController Player;
 
     private void OnGameStart()
     {
-        Vector2Int pPos = CurrentMapRaw.PlayerPos;
-        CurrentRawPosition = new Vector2Int(CurrentMapRaw.PlayerPos.x, CurrentMapRaw.PlayerPos.y);
+        
     }
 }

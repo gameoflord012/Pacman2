@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,7 +34,7 @@ public class GameManager : MonoBehaviour
             case GameState.GameStart:
                 StartGame();
                 break;
-            case GameState.GameEnd:
+            case GameState.GameFinished:
                 break;            
         }
     }
@@ -50,10 +51,11 @@ public class GameManager : MonoBehaviour
     enum GameState
     {
         GameStart,
-        GameEnd,
+        GameFinished,
         None
     }
+    
+    public static event Action OnGameStart;
+    public static event Action OnGameFinished;
 
-    public delegate void GameStateHandler();
-    public static event GameStateHandler OnGameStart;
 }
