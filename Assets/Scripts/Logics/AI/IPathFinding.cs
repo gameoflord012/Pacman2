@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace GameAI
 {    
-
     public abstract class IPathFinding
     {
         public abstract Instruction GetInstruction(Vector2Int currentPos, Vector2Int targetPos);
@@ -16,5 +15,5 @@ namespace GameAI
             MoveUp,
             MoveDown
         }
-}
+    }
 }
