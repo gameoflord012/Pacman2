@@ -3,59 +3,65 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
-{    
-    public static GameManager Instance { get; private set; }    
-
-    private void Awake()
+namespace PacmanGame
+{
+    public class GameManager : MonoBehaviour
     {
-        if (Instance == null)
+        public static GameManager Instance { get; private set; }
+
+        private void Awake()
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
-        else
+
+        private void Start()
         {
-            Destroy(gameObject);
+            ChangeGameState(GameState.GameStart);
         }
-    }
 
-    private void Start()
-    {
-        ChangeGameState(GameState.GameStart);
-    }
-
-    void ChangeGameState(GameState state)
-    {
-        switch(state)
+        void ChangeGameState(GameState state)
         {
-            case GameState.None:
-                break;
-            case GameState.GameStart:
-                StartGame();
-                break;
-            case GameState.GameFinished:
-                break;            
+            switch (state)
+            {
+                case GameState.None:
+                    CurrentGameState = GameState.None;
+                    break;
+                case GameState.GameStart:
+                    CurrentGameState = GameState.GameStart;
+                    StartGame();
+                    break;
+                case GameState.GameFinished:
+                    CurrentGameState = GameState.GameFinished;
+                    break;
+            }
         }
+
+        void StartGame()
+        {
+            OnGameStart();
+
+            // Spawn Entities
+
+        }
+
+
+        public enum GameState
+        {
+            GameStart,
+            GameFinished,
+            None
+        }
+
+        public static GameState CurrentGameState;
+        public static event Action OnGameStart;
+        public static event Action OnGameFinished;
     }
-
-    void StartGame()
-    {
-        OnGameStart();
-
-        // Spawn Entities
-        
-    }
-
-
-    enum GameState
-    {
-        GameStart,
-        GameFinished,
-        None
-    }
-    
-    public static event Action OnGameStart;
-    public static event Action OnGameFinished;
-
 }

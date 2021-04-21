@@ -3,124 +3,146 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Animator))]
-public class PlayerController : MonoBehaviour
+namespace PacmanGame
 {
-    private void Awake()
+    [RequireComponent(typeof(Animator))]
+    public class PlayerController : MonoBehaviour
     {
-        animator = GetComponent<Animator>();
-    }
-    private void OnEnable()
-    {
-        GameManager.OnGameStart += OnGameStart;
-        GameManager.OnGameFinished += OnGameFinished;        
-    }
+        public delegate void DirectionHandler(Vector2Int direction);
+        public event DirectionHandler OnDirectionChange;
+        public event DirectionHandler OnPlayerRawPositionChange;
 
-    private void OnDisable()
-    {
-        GameManager.OnGameStart -= OnGameStart;        
-        GameManager.OnGameFinished -= OnGameFinished;        
-    }
-
-    void Update()
-    {
-        Vector2Int inputNext = GetInput();
-        if (inputNext.magnitude > 0.5f)
+        private void Awake()
         {
-            inputHolder = inputNext;
-            OnDirectionChange(inputHolder);
+            _animator = GetComponent<Animator>();
+        }
+        private void OnEnable()
+        {
+            GameManager.OnGameStart += OnGameStart;
+            GameManager.OnGameFinished += OnGameFinished;
         }
 
-        if (!isMoving)
+        private void OnDisable()
         {
-            if(MovePlayer(inputHolder))
+            GameManager.OnGameStart -= OnGameStart;
+            GameManager.OnGameFinished -= OnGameFinished;
+        }
+
+        private void Update()
+        {
+            if (GameManager.CurrentGameState == GameManager.GameState.GameStart)
             {
-                currentDirection = inputHolder;
+                Vector2Int inputNext = GetInput();
+                if (inputNext.magnitude > 0.5f)
+                {
+                    _inputHolder = inputNext;
+                    OnDirectionChange?.Invoke(_inputHolder);
+                }
+
+                if (!_isMoving)
+                {
+                    if (MovePlayer(_inputHolder))
+                    {
+                        _currentDirection = _inputHolder;
+                    }
+                    else
+                    {
+                        MovePlayer(_currentDirection);
+                    }
+                }
             }
-            else
+        }
+
+        Vector2Int GetInput()
+        {
+            Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            if (Mathf.Abs(input.x) > 0.5f) return new Vector2Int(Math.Sign(input.x), 0);
+            if (Mathf.Abs(input.y) > 0.5f) return new Vector2Int(0, Math.Sign(input.y));
+            return Vector2Int.zero;
+        }
+        bool MovePlayer(Vector2Int direction)
+        {
+            _isMoving = true;
+            bool result = false;
+            if (direction == Vector2Int.left)
             {
-                MovePlayer(currentDirection);
-            }                
+                _animator.SetFloat("MoveX", -1);
+                _animator.SetFloat("MoveY", 0);
+                result = _moveStrategy.MoveLeft();
+            }
+            else if (direction == Vector2Int.right)
+            {
+                _animator.SetFloat("MoveX", 1);
+                _animator.SetFloat("MoveY", 0);
+                result = _moveStrategy.MoveRight();
+            }
+            else if (direction == Vector2Int.up)
+            {
+                _animator.SetFloat("MoveX", 0);
+                _animator.SetFloat("MoveY", 1);
+                result = _moveStrategy.MoveUp();
+            }
+            else if (direction == Vector2Int.down)
+            {
+                _animator.SetFloat("MoveX", 0);
+                _animator.SetFloat("MoveY", -1);
+                result = _moveStrategy.MoveDown();
+            }
+            else if (direction == Vector2Int.zero)
+            {
+                _isMoving = false;
+                result = true;
+            }
+            OnPlayerRawPositionChange(_moveStrategy.CurrentPosition);
+            return result;
         }
-    }
 
-    Vector2Int GetInput()
-    {
-        return new Vector2Int(
-            Math.Sign(Input.GetAxisRaw("Horizontal")),
-            Math.Sign(Input.GetAxisRaw("Vertical"))
-            );
-    }
-    bool MovePlayer(Vector2Int direction)
-    {
-        isMoving = true;
-        if (direction == Vector2Int.left)
+        void OnMovementFinished()
         {
-            animator.SetFloat("MoveX", -1);
-            animator.SetFloat("MoveY", 0);
-            return moveStrategy.MoveLeft(transform);
+            _isMoving = false;
         }
-        else if (direction == Vector2Int.right)
+
+        void OnGameStart()
         {
-            animator.SetFloat("MoveX", 1);
-            animator.SetFloat("MoveY", 0);
-            return moveStrategy.MoveRight(transform);
+            Globals globals = Globals.Instance;
+            MapRaw map = globals.CurrentMapRaw;
+
+            // Initalize field
+            _isMoving = false;
+            _inputHolder = Vector2Int.right;
+            _currentDirection = Vector2Int.right;
+            OnDirectionChange?.Invoke(_inputHolder);
+
+            // Set strategy pattern
+            _moveStrategy = gameObject.AddComponent<PacmanMovement>().Init(transform, map, map.PlayerPos);
+            _moveStrategy.OnMovementFinshed += OnMovementFinished;
+
+            // Spawn entities
+            transform.position = globals.CurrentTilemap.GetCellCenterLocal(new Vector3Int(
+                map.PlayerPos.y,
+                map.Size.x - 1 - map.PlayerPos.x,
+                0
+            ));
         }
-        else if (direction == Vector2Int.up)
+
+        void OnGameFinished()
         {
-            animator.SetFloat("MoveX", 0);
-            animator.SetFloat("MoveY", 1);
-            return moveStrategy.MoveUp(transform);
+            _moveStrategy.OnMovementFinshed -= OnMovementFinished;
         }
-        else if (direction == Vector2Int.down)
+
+        IMoveBehaviour _moveStrategy;
+        public IMoveBehaviour MoveStrategy
         {
-            animator.SetFloat("MoveX", 0);
-            animator.SetFloat("MoveY", -1);
-            return moveStrategy.MoveDown(transform);
+            get
+            {
+                return _moveStrategy;
+            }
+            private set { }
         }
-        else if (direction == Vector2Int.zero)
-        {
-            isMoving = false;
-            return true;
-        }        
-        throw new InvalidPlayerDirection("Invalid Vector2Int value");
+
+        bool _isMoving;
+        private Animator _animator;
+        private Vector2Int _inputHolder;
+        private Vector2Int _currentDirection;
     }
-
-    void OnMovementFinished()
-    {
-        isMoving = false;
-    }
-
-    void OnGameStart()
-    {        
-        Globals globals = Globals.Instance;
-        MapRaw map = globals.CurrentMapRaw;
-
-        isMoving = false;
-        inputHolder = Vector2Int.right;
-        currentDirection = Vector2Int.right;
-
-        moveStrategy = gameObject.AddComponent<PacmanMovement>().Init(map, map.PlayerPos);
-        moveStrategy.OnMovementFinshed += OnMovementFinished;
-
-        transform.position = globals.CurrentTilemap.GetCellCenterLocal(new Vector3Int(
-            map.PlayerPos.y,
-            map.Size.x - 1 - map.PlayerPos.x, 
-            0
-        ));
-    }
-
-    void OnGameFinished()
-    {
-        moveStrategy.OnMovementFinshed -= OnMovementFinished;
-    }
-
-    public delegate void DirectionHandler(Vector2Int direction);
-    public event DirectionHandler OnDirectionChange;
-
-    IMoveBehaviour moveStrategy;
-    bool isMoving = false;
-    Animator animator;
-    Vector2Int inputHolder;
-    Vector2Int currentDirection;    
 }

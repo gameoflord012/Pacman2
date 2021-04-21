@@ -2,22 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ResourceManager : MonoBehaviour
+namespace PacmanGame
 {
-    public static ResourceManager Instance { get; private set; }
-    private void Awake()
+    public class ResourceManager : MonoBehaviour
     {
-        if (Instance == null)
+        public static ResourceManager Instance { get; private set; }
+        private void Awake()
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
 
-    [SerializeField] public Texture2D WallTexture;
-    [SerializeField] public Texture2D SpaceTexture;
+        [SerializeField] public Texture2D WallTexture;
+        [SerializeField] public Texture2D SpaceTexture;
+    }
 }

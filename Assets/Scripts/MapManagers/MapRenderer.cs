@@ -4,35 +4,36 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.Assertions;
 
-[RequireComponent(typeof(Tilemap))]
-public class MapRenderer : MonoBehaviour
-{
-    [SerializeField] Vector2Int offSet;
-
-    MapRaw mapRaw;
-    Tilemap tileMap;
-
-    private void Start()
+namespace PacmanGame {
+    [RequireComponent(typeof(Tilemap))]
+    public class MapRenderer : MonoBehaviour
     {
-        tileMap = GetComponent<Tilemap>();
-        mapRaw = Globals.Instance.CurrentMapRaw;
-        DrawOnTilemap();
-    }
+        private void Start()
+        {
+            _tileMap = GetComponent<Tilemap>();
+            MapRaw = Globals.Instance.CurrentMapRaw;
+            DrawOnTilemap();
+        }
 
-    private void DrawOnTilemap()
-    {
-        var globals = Globals.Instance;
-        var size = mapRaw.Size;        
+        private void DrawOnTilemap()
+        {
+            var globals = Globals.Instance;
+            var size = MapRaw.Size;
 
-        for (int i = 0; i < size.x; i++)
-            for (int j = 0; j < size.y; j++)
-            {                
-                foreach(var e in globals.GetTileBase) 
-                    if(e.Key == mapRaw.GetTile(i, j))
-                    {
-                        tileMap.SetTile(new Vector3Int(j + offSet.x, size.x - 1 - i + offSet.y, 0), e.Value);
-                        break;
-                    }
-            }
+            for (int i = 0; i < size.x; i++)
+                for (int j = 0; j < size.y; j++)
+                {
+                    foreach (var e in globals.GetTileBase)
+                        if (e.Key == MapRaw.GetTile(i, j))
+                        {
+                            _tileMap.SetTile(new Vector3Int(j + _offSet.x, size.x - 1 - i + _offSet.y, 0), e.Value);
+                            break;
+                        }
+                }
+        }
+
+        [SerializeField] private Vector2Int _offSet;
+        MapRaw MapRaw; // Mark as readonly
+        Tilemap _tileMap;
     }
 }
