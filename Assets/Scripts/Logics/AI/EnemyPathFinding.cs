@@ -7,11 +7,11 @@ namespace GameAI
     public class EnemyPathFinding : IPathFinding
     {
         /* Start coding here ...
+         * 
          * map.GetTile(x, y) to retrive informations at tile (x, y)
          * 
-         * Example:
          * To check if a tile is wall
-         *      Map.IsWall(x, y) == Globals.CellFormat.Wall
+         *      Map.IsWall(x, y) == true
          *      
          * To check if a tile is space
          *      Map.IsSpace(x, y) == true
@@ -21,11 +21,16 @@ namespace GameAI
          *      
          * And world height
          *      Map.Size.y
+         *      
+         * The pivot is on the top left corner and position at (0, 0)
          */
 
         public override Instruction GetInstruction(Vector2Int currentPos, Vector2Int targetPos)
         {
-            // Delete this line before coding ...            
+            // Delete these before coding ...
+            int w = Map.Size.x;
+            int h = Map.Size.y;
+
             System.Random rand = new System.Random();
             int val = rand.Next(4);
             if (val == 0) return Instruction.MoveLeft;
@@ -35,7 +40,6 @@ namespace GameAI
         }
 
         // Don't modify anything below this line!
-
         public EnemyPathFinding(in PacmanGame.MapRaw map)
         {
             Map = map;
